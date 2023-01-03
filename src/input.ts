@@ -1,5 +1,5 @@
 class InputController {
-	scheme = {};
+	scheme: Record<string, Record<string, string>> = {};
 	keyState = {};
 	lastUpdate = 0;
 	activeInterface = 'keyboard';

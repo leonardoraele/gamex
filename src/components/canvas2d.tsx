@@ -1,37 +1,38 @@
 // CanvasRenderingContext2D reference:
 // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D#drawing_rectangles
 
-import Vector2 from "../vector2";
+import Vector2 from '../vector2';
+import { EngineXFunctionComponent } from '/src/jsx/jsx-runtime';
 
-export function Transform({ reset, translate, rotate, scale, matrix, children }, { context }, hooks) {
-	context.save();
+export const Transform: EngineXFunctionComponent<{
+	reset?: boolean;
+	translate?: Vector2;
+	rotate?: number;
+	scale?: Vector2;
+	matrix?: [number, number, number, number, number, number];
+}> = ({ reset, translate, rotate, scale, matrix, children }, { context }) => {
 	if (reset) context.resetTransform();
 	if (translate) context.translate(translate.x, translate.y);
 	if (rotate) context.rotate(rotate);
 	if (scale) context.scale(scale.x, scale.y);
 	if (matrix) context.transform(...matrix);
-	hooks.afterChildren(() => context.restore());
 	return children;
 }
 
 /**
  * See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle
  */
-export function FillStyle({ style, children }, { context }, hooks) {
-	context.save();
+export function FillStyle({ style, children }, { context }) {
 	context.fillStyle = style;
-	hooks.afterChildren(() => context.restore());
 	return children;
 }
 
 /**
  * For operation, see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
  */
-export function Alpha({ value, operation, children }, { context }, hooks) {
-	context.save();
+export function Alpha({ value, operation, children }, { context }) {
 	context.globalAlpha = value;
 	if (operation) context.globalCompositeOperation = operation;
-	hooks.afterChildren(() => context.restore());
 	return children;
 }
 
@@ -50,11 +51,9 @@ export function Rect(
 	},
 	{ context },
 ) {
-	context.save();
 	if (style) context.fillStyle = style;
 	if (alpha) context.globalAlpha = alpha;
 	context.fillRect(x, y, width, height);
-	context.restore();
 }
 
 export function Border(
@@ -78,9 +77,7 @@ export function Border(
 		alpha,
 	},
 	{ context },
-	hooks,
 ) {
-	context.save();
 	if (shadowColor) context.shadowColor = shadowColor;
 	if (shadowBlur) context.shadowBlur = shadowBlur;
 	if (lineJoin) context.lineJoin = lineJoin;
@@ -90,7 +87,6 @@ export function Border(
 	if (shadowOffsetY) context.shadowOffsetY = shadowOffsetY;
 	if (alpha) context.globalAlpha = alpha;
 	context.strokeRect(x, y, width, height);
-	hooks.afterChildren(() => context.restore());
 	return children;
 }
 
@@ -109,7 +105,6 @@ export function Text({
 	},
 	{ context },
 ) {
-	context.save();
 	if (font) context.font = font;
 	if (textAlign) context.textAlign = textAlign;
 	if (textBaseline) context.textBaseline = textBaseline;
@@ -120,7 +115,6 @@ export function Text({
 	} else {
 		context.fillText(text, x, y, maxWidth);
 	}
-	context.restore();
 }
 
 // TODO Draw line components
@@ -129,7 +123,7 @@ export function Text({
 
 // For smoothQuality, see: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingQuality
 // Also mind that quality does not work on firefox :(
-export function Image(props, { context }) {
+export function Picture(props, { context }) {
 	const {
 		image,
 		x = 0,
@@ -146,22 +140,18 @@ export function Image(props, { context }) {
 		const scale = new Vector2((!mirrorX) * 2 - 1, (!mirrorY) * 2 - 1);
 		return (
 			<Transform translate={translate} scale={scale}>
-				<Image {...{ ...props, mirrorX: false, mirrorY: false }} />
+				<Picture {...{ ...props, mirrorX: false, mirrorY: false }} />
 			</Transform>
 		);
 	}
-	context.save();
 	if (smooth) context.imageSmoothingEnabled = smooth;
 	if (smoothQuality) context.imageSmoothingQuality = smoothQuality;
 	context.drawImage(image, x, y, width, height);
-	context.restore();
 }
 
 // TODO Pixel manipulation components
 
-export function Filter({ value, children }, { context }, hooks) {
-	context.save();
+export function Filter({ value, children }, { context }) {
 	context.filter = value;
-	hooks.afterChildren(() => context.restore());
 	return children;
 }

@@ -1,43 +1,31 @@
-import InputController from './input';
-import { type JsxElement } from './jsx';
-import ResourceLoader from './resource-loader';
+import InputController from '~/input';
+import { type JsxElement } from '~/jsx/jsx-runtime';
+import ResourceLoader from '~/resource-loader';
 
-export * from './vector2';
-export * from './components/canvas2d';
-
-type Listener = () => unknown;
-
-class Hooks {
-	afterChildrenListeners: Listener[] = [];
-	afterChildren(); // Notifies listeners
-	afterChildren(listener: Listener); // Register a listener
-	afterChildren(listener?: Listener) {
-		if (listener) {
-			this.afterChildrenListeners.push(listener);
-		} else {
-			this.afterChildrenListeners.forEach(listener => listener());
-		}
-	}
-}
+export * from '~/vector2';
+export * from '~/components/canvas2d';
 
 function update(element: JsxElement|JsxElement[], frameController: FrameController) {
-	const hooks = new Hooks();
-
 	if (Array.isArray(element)) { // Implicit fragment
 		for (const child of element) {
 			update(child, frameController);
 		}
-	} else if (typeof element.type === 'function') { // Function component
-		const output = element.type(element.props, frameController, hooks);
+	} else if (element) {
+		// TODO To avoid saving and restoring rendering context for every component, we should replace the context
+		// prop in the frameController for a getter function that saves the content state the first time it is used and
+		// exposes a method that conditionally restore it only if it was used (thus, saved).
+		frameController.context.save();
+		const output = typeof element.type === 'function'
+			? element.type(element.props, frameController)
+			: element.type.update(element.props, frameController);
 		const children = Array.isArray(output) ? output
-			: typeof output?.type === 'function' ? [output]
+			: output ? [output]
 			: [];
 		for (const child of children) {
 			update(child, frameController);
 		}
+		frameController.context.restore();
 	}
-
-	hooks.afterChildren();
 }
 
 interface Space {
@@ -45,16 +33,16 @@ interface Space {
 	height: number;
 }
 
-interface FrameController {
-	input: InputController,
-	delta: number;
-	timestamp: number;
-	context: CanvasRenderingContext2D;
-	space: Space;
-	loader: ResourceLoader;
+export interface FrameController {
+	readonly input: InputController,
+	readonly delta: number;
+	readonly timestamp: number;
+	readonly context: CanvasRenderingContext2D;
+	readonly space: Space;
+	readonly loader: ResourceLoader;
 }
 
-interface Scene {
+export interface Scene {
 	setup(resources: {
 		input: InputController,
 		context: CanvasRenderingContext2D,
