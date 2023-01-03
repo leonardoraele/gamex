@@ -5,7 +5,7 @@ class Character {
 	speed = 5;
 }
 
-function HeroActor({ input, loader }, { hero }) {
+function HeroActor({ hero }, { input, loader }) {
 	const horizontalMovement = Number(input.checkActionOngoing('move-right'))
 		- Number(input.checkActionOngoing('move-left'));
   	hero.position = hero.position.add(Vector2.right.mul(horizontalMovement * hero.speed));

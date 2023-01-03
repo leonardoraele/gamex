@@ -32,4 +32,4 @@ class Vector2 {
 	}
 }
 
-export { Vector2, Vector2 as default };
+export { Vector2, Vector2 as default, Vector2 as V2 };

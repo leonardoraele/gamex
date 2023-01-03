@@ -3,7 +3,7 @@
 
 import Vector2 from "../vector2";
 
-export function Transform({ context }, { reset, translate, rotate, scale, matrix, children }, hooks) {
+export function Transform({ reset, translate, rotate, scale, matrix, children }, { context }, hooks) {
 	context.save();
 	if (reset) context.resetTransform();
 	if (translate) context.translate(translate.x, translate.y);
@@ -17,7 +17,7 @@ export function Transform({ context }, { reset, translate, rotate, scale, matrix
 /**
  * See https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/fillStyle
  */
-export function FillStyle({ context }, { style, children }, hooks) {
+export function FillStyle({ style, children }, { context }, hooks) {
 	context.save();
 	context.fillStyle = style;
 	hooks.afterChildren(() => context.restore());
@@ -27,7 +27,7 @@ export function FillStyle({ context }, { style, children }, hooks) {
 /**
  * For operation, see https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation
  */
-export function Alpha({ context }, { value, operation, children }, hooks) {
+export function Alpha({ value, operation, children }, { context }, hooks) {
 	context.save();
 	context.globalAlpha = value;
 	if (operation) context.globalCompositeOperation = operation;
@@ -36,7 +36,6 @@ export function Alpha({ context }, { value, operation, children }, hooks) {
 }
 
 export function Rect(
-	{ context },
 	{
 		begin,
 		end, // Mandatory unless size or width and height are provided
@@ -49,6 +48,7 @@ export function Rect(
 		style,
 		alpha,
 	},
+	{ context },
 ) {
 	context.save();
 	if (style) context.fillStyle = style;
@@ -58,7 +58,6 @@ export function Rect(
 }
 
 export function Border(
-	{ context },
 	{
 		begin,
 		end, // Mandatory unless size or width and height are provided
@@ -78,6 +77,7 @@ export function Border(
 		children,
 		alpha,
 	},
+	{ context },
 	hooks,
 ) {
 	context.save();
@@ -95,7 +95,20 @@ export function Border(
 }
 
 // TOOD Get text from children if `text` prop is empty.
-export function Text({ context }, { text, x = 0, y = 0, maxWidth, font, textAlign, textBaseline, direction, outline = false, alpha }) {
+export function Text({
+		text,
+		x = 0,
+		y = 0,
+		maxWidth,
+		font,
+		textAlign,
+		textBaseline,
+		direction,
+		outline = false,
+		alpha,
+	},
+	{ context },
+) {
 	context.save();
 	if (font) context.font = font;
 	if (textAlign) context.textAlign = textAlign;
@@ -116,7 +129,7 @@ export function Text({ context }, { text, x = 0, y = 0, maxWidth, font, textAlig
 
 // For smoothQuality, see: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingQuality
 // Also mind that quality does not work on firefox :(
-export function Image({ context }, props) {
+export function Image(props, { context }) {
 	const {
 		image,
 		x = 0,
@@ -146,7 +159,7 @@ export function Image({ context }, props) {
 
 // TODO Pixel manipulation components
 
-export function Filter({ context }, { value, children }, hooks) {
+export function Filter({ value, children }, { context }, hooks) {
 	context.save();
 	context.filter = value;
 	hooks.afterChildren(() => context.restore());
